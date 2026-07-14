@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Despensa Grañón</title>
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiRGVzcGVuc2EgR3Jhw7FvbiIsInNob3J0X25hbWUiOiJHcmHDsW9uIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNGMEU2RDIiLCJ0aGVtZV9jb2xvciI6IiMzRjZCNEYifQ==">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root{
+  --paper:#F0E6D2;
+  --paper-deep:#E6D9BC;
+  --card:#FFFCF5;
+  --ink:#2E2A22;
+  --muted:#8A7F6A;
+  --green:#3F6B4F;
+  --green-deep:#2E5140;
+  --red:#B23A2E;
+  --line: rgba(46,42,34,0.12);
+}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+
+body{
+  margin:0;
+  background:var(--paper);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(46,42,34,0.045) 1px, transparent 0);
+  background-size: 14px 14px;
+  color:var(--ink);
+  font-family:'Space Grotesk', sans-serif;
+  min-height:100vh;
+  padding-bottom:40px;
+}
+
+header{
+  position:sticky; top:0; z-index:10;
+  background:var(--paper);
+  border-bottom:2px solid var(--ink);
+  padding:22px 18px 14px;
+}
+header .eyebrow{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  letter-spacing:2px;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+header h1{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:32px;
+  margin:2px 0 14px;
+  letter-spacing:-0.5px;
+}
+
+.controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.toggle{
+  font-family:'Space Grotesk', sans-serif;
+  font-size:13px;
+  font-weight:600;
+  border:2px solid var(--ink);
+  background:var(--card);
+  color:var(--ink);
+  padding:8px 14px;
+  border-radius:20px;
+  cursor:pointer;
+  transition: all .15s ease;
+}
+.toggle.active{ background:var(--ink); color:var(--paper); }
+.toggle:active{ transform: scale(0.96); }
+
+.count-pill{
+  font-family:'JetBrains Mono', monospace;
+  font-size:12px;
+  color:var(--muted);
+  margin-left:auto;
+}
+
+main{ padding:16px 14px 0; max-width:640px; margin:0 auto; }
+
+.category{ margin-bottom:26px; }
+.category-head{
+  display:flex; align-items:baseline; gap:10px;
+  margin-bottom:8px;
+  padding-bottom:6px;
+  border-bottom: 1.5px dashed var(--ink);
+}
+.category-head .icon{ font-size:20px; }
+.category-head h2{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:19px;
+  margin:0;
+  flex:1;
+}
+.category-head .tally{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  color:var(--muted);
+}
+
+.item{
+  display:flex; align-items:center; gap:12px;
+  background:var(--card);
+  border:1.5px solid var(--ink);
+  border-radius:10px;
+  padding:10px 12px;
+  margin-bottom:8px;
+  box-shadow: 2px 2px 0 rgba(46,42,34,0.08);
+  transition: box-shadow .15s ease;
+}
+.item.empty{
+  border-color:var(--red);
+  border-width:2px;
+  background:#FBE6E3;
+  box-shadow: 2px 2px 0 rgba(178,58,46,0.18);
+}
+.item.empty .name{ color:var(--red); font-weight:700; }
+
+.item .name{
+  flex:1;
+  font-size:15px;
+  font-weight:500;
+  line-height:1.25;
+}
+.item .name .stock-dot{
+  display:inline-block; width:7px; height:7px; border-radius:50%;
+  background:var(--green); margin-right:7px; position:relative; top:-1px;
+}
+.item.empty .name .stock-dot{ background:var(--red); }
+
+.badge-agotado{
+  display:inline-block;
+  font-family:'JetBrains Mono', monospace;
+  font-size:9.5px;
+  font-weight:700;
+  letter-spacing:1px;
+  background:var(--red);
+  color:#FFF7F2;
+  padding:2px 6px;
+  border-radius:4px;
+  margin-left:8px;
+  vertical-align:1px;
+}
+
+.delete-btn{
+  width:26px; height:26px;
+  border:none;
+  background:transparent;
+  color:var(--muted);
+  font-size:17px;
+  line-height:1;
+  cursor:pointer;
+  flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.delete-btn:active{ color:var(--red); }
+
+.confirm-yes, .confirm-no{
+  font-family:'Space Grotesk', sans-serif;
+  font-weight:600;
+  font-size:13px;
+  padding:8px 12px;
+  border-radius:8px;
+  border:1.5px solid var(--ink);
+  cursor:pointer;
+  flex-shrink:0;
+}
+.confirm-yes{ background:var(--red); color:#FFF7F2; border-color:var(--red); }
+.confirm-yes:active{ background:#8A2C22; }
+.confirm-no{ background:var(--card); color:var(--ink); }
+.confirm-no:active{ background:var(--paper-deep); }
+
+.stepper{ display:flex; align-items:center; gap:0; flex-shrink:0; }
+.stepper button{
+  width:34px; height:34px;
+  border:1.5px solid var(--ink);
+  background:var(--paper);
+  font-size:18px;
+  font-weight:700;
+  color:var(--ink);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.stepper button:first-child{ border-radius:8px 0 0 8px; }
+.stepper button:last-child{ border-radius:0 8px 8px 0; }
+.stepper button:active{ background:var(--ink); color:var(--paper); }
+.stepper .qty{
+  font-family:'JetBrains Mono', monospace;
+  font-weight:700;
+  font-size:15px;
+  width:34px;
+  text-align:center;
+  border-top:1.5px solid var(--ink);
+  border-bottom:1.5px solid var(--ink);
+  background:var(--card);
+}
+
+.add-row{
+  display:flex; gap:8px; margin-top:6px;
+}
+.add-row input{
+  flex:1;
+  font-family:'Space Grotesk', sans-serif;
+  font-size:14px;
+  padding:9px 12px;
+  border:1.5px solid var(--ink);
+  border-radius:8px;
+  background:var(--card);
+  color:var(--ink);
+}
+.add-row input:focus{ outline:2px solid var(--green); outline-offset:1px; }
+.add-row button{
+  font-family:'Space Grotesk', sans-serif;
+  font-weight:600;
+  font-size:14px;
+  border:1.5px solid var(--ink);
+  background:var(--green);
+  color:var(--card);
+  padding:9px 16px;
+  border-radius:8px;
+  cursor:pointer;
+}
+.add-row button:active{ background:var(--green-deep); }
+
+.empty-state{
+  text-align:center;
+  padding:40px 20px;
+  color:var(--muted);
+  font-family:'Fraunces', serif;
+  font-size:16px;
+}
+
+.sync-note{
+  text-align:center;
+  font-family:'JetBrains Mono', monospace;
+  font-size:10.5px;
+  color:var(--muted);
+  padding:20px 20px 0;
+}
+
+.loading{
+  text-align:center; padding:60px 20px;
+  font-family:'JetBrains Mono', monospace;
+  color:var(--muted); font-size:13px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ transition:none !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Etxeko despentsa · Casa Grañón · v2</div>
+  <h1>Despensa</h1>
+  <div class="controls">
+    <button class="toggle" id="filterBtn">Solo lo que falta</button>
+    <button class="toggle" id="refreshBtn">↻ Actualizar</button>
+    <span class="count-pill" id="countPill"></span>
+  </div>
+</header>
+
+<main id="main">
+  <div class="loading">Cargando despensa…</div>
+</main>
+
+<div class="sync-note">Los cambios se guardan y se ven al instante desde cualquier móvil con este enlace.</div>
+
+<script>
+// ID del almacén remoto en npoint.io. Se rellena la primera vez que se ejecuta la app.
+const STORE_ID = null;
+
+const DEFAULT_DATA = {
+  categories: [
+    { id:'bebidas', label:'Bebidas', icon:'🥤', items:[
+      ['AGUA 5L',2],['AGUA BOTELLÍN',2],['CERVEZA 0,0',8],['COCA COLA',0],['CAFÉ MARI',2]
+    ]},
+    { id:'despensa', label:'Despensa', icon:'🍚', items:[
+      ['ALUBIAS COCIDAS',1],['ARROZ 1KG',2],['ATÚN EN LATA',6],['ESPAGUETIS 1KG',0],
+      ['GARBANZOS',1],['GUISANTES LATA',0],['LECHE DE AVENA',0],['LECHE ENTERA',0],
+      ['LECHE SIN LACTOSA',0],['LENTEJAS',2],['LENTEJAS COCIDAS',1],['MACARRONES 500G',0],
+      ['MACEDONIA DE VERDURAS',1],['MAYONESA',0],['PAN RALLADO',1],['PATATAS FRITAS',0],
+      ['PIMIENTO DEL PIQUILLO',1],['SAL',1],['SALCHICHAS',0],['TOMATE FRITO',1],['GALLETAS',0]
+    ]},
+    { id:'limpieza', label:'Limpieza', icon:'🧹', items:[
+      ['BOLSAS CONGELACIÓN 2,5L',1],['BOLSAS DE BASURA',0],['DETERGENTE LAVADORA',0],
+      ['ESPONJAS',2],['ESTROPAJOS',4],['FREGONAS',1],['PAPEL ALBAL',2],['PAPEL DE COCINA',1],
+      ['PAPEL FILM',2],['TRAPO PARA CRISTALES',1],['TRAPOS',2],['ROLLO VILEDA',1],['PINZAS DE ROPA',1]
+    ]},
+    { id:'higiene', label:'Higiene', icon:'🧴', items:[
+      ['CEPILLOS DE DIENTES',2],['COMPRESAS',0],['GEL DE DUCHA',0],['PASTA DE DIENTES',2],
+      ['TAMPONES',1],['TOALLITAS',5],['PAÑUELOS DE PAPEL',0],['PAPEL HIGIÉNICO',3],['SERVILLETAS',1]
+    ]}
+  ]
+};
+
+let state = null;
+let showOnlyEmpty = false;
+let saveTimer = null;
+let confirmingDeleteId = null;
+
+function normalize(raw){
+  // build flat item list with stable ids
+  let idCounter = 1;
+  const categories = raw.categories.map(cat => ({
+    id: cat.id, label: cat.label, icon: cat.icon,
+    items: cat.items.map(it => {
+      if (Array.isArray(it)) {
+        return { id: cat.id + '-' + (idCounter++), name: it[0], qty: it[1] };
+      }
+      return it;
+    })
+  }));
+  return { categories };
+}
+
+async function loadState(){
+  const main = document.getElementById('main');
+
+  if (!STORE_ID){
+    // Modo configuración: crear un almacén nuevo y mostrar el código para configurarlo
+    main.innerHTML = '<div class="loading">Creando almacén de datos…</div>';
+    try{
+      const res = await fetch('https://api.npoint.io', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(normalize(DEFAULT_DATA))
+      });
+      if (!res.ok) throw new Error('No se pudo crear el almacén: ' + res.status);
+      const json = await res.json();
+      const newId = json.id;
+      main.innerHTML = `
+        <div class="empty-state" style="text-align:left; padding:24px 4px;">
+          <p style="font-family:'Fraunces',serif; font-size:20px; margin:0 0 12px;">✅ Almacén creado</p>
+          <p style="font-size:14px; color:var(--ink); margin:0 0 14px;">Copia este código y mándaselo a Claude para terminar de configurar la app:</p>
+          <div style="background:var(--card); border:1.5px solid var(--ink); border-radius:8px; padding:14px; font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; word-break:break-all; user-select:all;">${newId}</div>
+        </div>`;
+    }catch(e){
+      console.error(e);
+      main.innerHTML = '<div class="empty-state">⚠️ No se pudo crear el almacén de datos. Revisa tu conexión e inténtalo de nuevo recargando la página.</div>';
+    }
+    return;
+  }
+
+  try{
+    const res = await fetch(`https://api.npoint.io/${STORE_ID}`);
+    if (!res.ok) throw new Error('Error al leer datos: ' + res.status);
+    state = await res.json();
+  }catch(e){
+    console.error('No se pudo cargar desde npoint', e);
+    if (!state) state = normalize(DEFAULT_DATA);
+    main.innerHTML = '<div class="empty-state">⚠️ No se pudo conectar para cargar los datos. Revisa tu conexión y pulsa Actualizar.</div>';
+    return;
+  }
+  render();
+}
+
+async function saveState(){
+  if (!STORE_ID) return;
+  try{
+    const res = await fetch(`https://api.npoint.io/${STORE_ID}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    });
+    if (!res.ok){
+      console.error('No se pudo guardar', await res.text());
+    }
+  }catch(e){
+    console.error('No se pudo guardar', e);
+  }
+}
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveState, 250);
+}
+
+function changeQty(catId, itemId, delta){
+  const cat = state.categories.find(c=>c.id===catId);
+  const item = cat.items.find(i=>i.id===itemId);
+  item.qty = Math.max(0, item.qty + delta);
+  scheduleSave();
+  render();
+}
+
+function deleteItem(catId, itemId){
+  const cat = state.categories.find(c=>c.id===catId);
+  cat.items = cat.items.filter(i => i.id !== itemId);
+  confirmingDeleteId = null;
+  scheduleSave();
+  render();
+}
+
+function addItem(catId, name){
+  name = name.trim();
+  if (!name) return;
+  const cat = state.categories.find(c=>c.id===catId);
+  const id = catId + '-' + Date.now();
+  cat.items.push({ id, name: name.toUpperCase(), qty: 1 });
+  scheduleSave();
+  render();
+}
+
+function render(){
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  let total = 0, empty = 0;
+  state.categories.forEach(c => c.items.forEach(i => { total++; if(i.qty===0) empty++; }));
+  document.getElementById('countPill').textContent = empty + ' de ' + total + ' agotados';
+
+  let anyVisible = false;
+
+  state.categories.forEach(cat => {
+    const visibleItems = showOnlyEmpty ? cat.items.filter(i => i.qty === 0) : cat.items;
+    if (visibleItems.length === 0) return;
+    anyVisible = true;
+
+    const catEmpty = cat.items.filter(i=>i.qty===0).length;
+
+    const section = document.createElement('section');
+    section.className = 'category';
+
+    const head = document.createElement('div');
+    head.className = 'category-head';
+    head.innerHTML = `<span class="icon">${cat.icon}</span><h2>${cat.label}</h2><span class="tally">${catEmpty} agotado${catEmpty===1?'':'s'}</span>`;
+    section.appendChild(head);
+
+    visibleItems.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'item' + (item.qty === 0 ? ' empty' : '');
+      const isConfirming = confirmingDeleteId === item.id;
+
+      if (isConfirming){
+        row.innerHTML = `
+          <div class="name">¿Quitar "${item.name}" de la despensa?</div>
+          <button class="confirm-yes">Sí, quitar</button>
+          <button class="confirm-no">Cancelar</button>
+        `;
+        row.querySelector('.confirm-yes').onclick = () => { deleteItem(cat.id, item.id); };
+        row.querySelector('.confirm-no').onclick = () => { confirmingDeleteId = null; render(); };
+        section.appendChild(row);
+        return;
+      }
+
+      row.innerHTML = `
+        <div class="name"><span class="stock-dot"></span>${item.name}${item.qty === 0 ? '<span class="badge-agotado">AGOTADO</span>' : ''}</div>
+        <div class="stepper">
+          <button aria-label="Restar">−</button>
+          <div class="qty">${item.qty}</div>
+          <button aria-label="Sumar">+</button>
+        </div>
+        <button class="delete-btn" aria-label="Eliminar artículo" title="Eliminar">✕</button>
+      `;
+      row.querySelector('.stepper button:first-child').onclick = () => changeQty(cat.id, item.id, -1);
+      row.querySelector('.stepper button:last-child').onclick = () => changeQty(cat.id, item.id, 1);
+      row.querySelector('.delete-btn').onclick = () => {
+        confirmingDeleteId = item.id;
+        render();
+      };
+      section.appendChild(row);
+    });
+
+    if (!showOnlyEmpty){
+      const addRow = document.createElement('div');
+      addRow.className = 'add-row';
+      addRow.innerHTML = `<input type="text" placeholder="Añadir artículo a ${cat.label.toLowerCase()}…" />
+                          <button>Añadir</button>`;
+      const input = addRow.querySelector('input');
+      const btn = addRow.querySelector('button');
+      const submit = () => { addItem(cat.id, input.value); input.value=''; };
+      btn.onclick = submit;
+      input.onkeydown = (e) => { if (e.key === 'Enter') submit(); };
+      section.appendChild(addRow);
+    }
+
+    main.appendChild(section);
+  });
+
+  if (!anyVisible){
+    main.innerHTML = '<div class="empty-state">🎉 Nada agotado por ahora</div>';
+  }
+}
+
+document.getElementById('filterBtn').onclick = (e) => {
+  showOnlyEmpty = !showOnlyEmpty;
+  e.target.classList.toggle('active', showOnlyEmpty);
+  render();
+};
+
+document.getElementById('refreshBtn').onclick = async (e) => {
+  const btn = e.currentTarget;
+  const original = btn.textContent;
+  btn.textContent = '↻ Actualizando…';
+  btn.disabled = true;
+  await loadState();
+  btn.textContent = '✓ Actualizado';
+  setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 900);
+};
+
+loadState();
+</script>
+</body>
+</html>
